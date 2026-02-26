@@ -7,10 +7,10 @@ import (
 	"github.com/go-redis/redis/v7" 
 )
 
-func initRedisProperty() *redis.Client {
+func initRedisProperty(connectionString string,password string) *redis.Client {
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", 
+		Addr:     connectionString,
+		Password: password, 
 		DB:       0,
 
 	
