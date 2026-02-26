@@ -10,8 +10,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func createDBPool(dsn string) *sql.DB {
-	db, err := sql.Open("postgres", dsn)
+func initPgProperty(connectionString string) *sql.DB {
+	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
