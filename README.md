@@ -305,7 +305,8 @@ $$\text{score} = 0.4 \times \text{popularity} + 0.35 \times \text{genre\_boost} 
 
 1. **ML Simulation Latency (30–50ms):** The model client simulates ML inference with an artificial 30–50ms delay, which is the dominant factor in iteration duration (~103ms avg including the 100ms sleep between k6 iterations). In production with a real ML service, network round-trip and inference time would similarly be the primary bottleneck.
 2. **Database Connection Pool Saturation:** With 25 max connections and 100 concurrent VUs, the pool could become a bottleneck under heavier load. Each recommendation requires 2 sequential DB queries (watch history + candidates).
-3. **JSON Serialization Overhead:** The `MaptoStruct` utility uses double marshal/unmarshal for type conversion, adding minor CPU overhead per request.
+3. **Batch Endpoint Goroutine Fan-out:** The batch endpoint spawns one goroutine per user (capped at 50 concurrent by semaphore). With very large datasets, even 50 concurrent ML simulation calls plus DB queries could strain resources.
+4. **JSON Serialization Overhead:** The `MaptoStruct` utility uses double marshal/unmarshal for type conversion, adding minor CPU overhead per request.
 
 ### Cache Hit Rate Analysis
 
