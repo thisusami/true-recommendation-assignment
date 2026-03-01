@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/thisusami/true-recommendation-assignment/src/db"
+	"github.com/thisusami/true-recommendation-assignment/src/adapters"
 	"github.com/thisusami/true-recommendation-assignment/src/handler"
 	"github.com/thisusami/true-recommendation-assignment/src/models"
 	"github.com/thisusami/true-recommendation-assignment/src/util"
@@ -20,12 +20,12 @@ func getEnv(key, fallback string) string {
 
 func main() {
 	app := fiber.New()
-	pg := db.InitPgProperty(getEnv("POSTGRES_DSN", "postgres://postgres:postgres@localhost:5432/recommendation?sslmode=disable"))
-	redis := db.InitRedisProperty(
+	pg := adapters.InitPgProperty(getEnv("POSTGRES_DSN", "postgres://postgres:postgres@localhost:5432/recommendation?sslmode=disable"))
+	redis := adapters.InitRedisProperty(
 		getEnv("REDIS_ADDR", "localhost:6379"),
 		getEnv("REDIS_PASSWORD", ""),
 	)
-	defer db.Close(pg)
+	defer adapters.Close(pg)
 	defer redis.Close()
 	app.Use(recover.New(recover.Config{
 		EnableStackTrace: true,
