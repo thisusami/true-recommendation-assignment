@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -14,10 +15,12 @@ type Database struct {
 }
 
 func (d *Database) GetUserById(userId string) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	var user models.User
 	startTime := time.Now()
 	util.Request("Request Get User By Id", userId)
-	result := d.DB.Where("id = ?", userId).First(&user)
+	result := d.DB.WithContext(ctx).Table("users").Where("id = ?", userId).First(&user)
 	if result.Error != nil {
 		util.Error("Error Get User By Id", result.Error.Error())
 		return nil, result.Error
@@ -27,11 +30,13 @@ func (d *Database) GetUserById(userId string) (*models.User, error) {
 	return &user, nil
 }
 func (d *Database) GetAllUsers(page, limit int) ([]models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	startTime := time.Now()
 	util.Request("Request Get All Users", fmt.Sprintf("page: %d, limit: %d", page, limit))
 	var users []models.User
 	offset := (page - 1) * limit
-	result := d.DB.Table("users").Offset(offset).Limit(limit).Find(&users)
+	result := d.DB.WithContext(ctx).Table("users").Offset(offset).Limit(limit).Find(&users)
 	if result.Error != nil {
 		util.Error("Error Get All Users", result.Error.Error())
 		return nil, result.Error
@@ -41,11 +46,13 @@ func (d *Database) GetAllUsers(page, limit int) ([]models.User, error) {
 	return users, nil
 }
 func (d *Database) GetWatchHistoryByUserId(userId string, page, limit int) ([]models.WatchHistory, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	var history []models.WatchHistory
 	startTime := time.Now()
 	util.Request("Request Get Watch History By UserId", userId)
 	offset := (page - 1) * limit
-	result := d.DB.Table("user_watch_history").Where("user_id = ?", userId).Offset(offset).Limit(limit).Find(&history)
+	result := d.DB.WithContext(ctx).Table("user_watch_history").Where("user_id = ?", userId).Offset(offset).Limit(limit).Find(&history)
 	if result.Error != nil {
 		util.Error("Error Get Watch History By UserId", result.Error.Error())
 		return nil, result.Error
@@ -55,10 +62,12 @@ func (d *Database) GetWatchHistoryByUserId(userId string, page, limit int) ([]mo
 	return history, nil
 }
 func (d *Database) GetWatchHistoryJoinContentByUserId(userId int64, page, limit int) ([]models.WatchHistoryWithContent, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	var history []models.WatchHistoryWithContent
 	startTime := time.Now()
 	util.Request("Request Watch History Join Content By UserId", fmt.Sprintf("%d", userId))
-	result := d.DB.Table("user_watch_history uwh").
+	result := d.DB.WithContext(ctx).Table("user_watch_history uwh").
 		Select("c.id, c.genre, uwh.watched_at").
 		Joins("join content c on uwh.content_id = c.id").
 		Where("uwh.user_id = ?", userId).
@@ -72,11 +81,13 @@ func (d *Database) GetWatchHistoryJoinContentByUserId(userId int64, page, limit 
 	return history, nil
 }
 func (d *Database) GetCandidateContents(userId int64, country string, subTier string, limit int) ([]models.Content, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	var contents []models.Content
 	startTime := time.Now()
 	util.Request("Request Candidate Contents By UserId", fmt.Sprintf("%d", userId))
-	subQuery := d.DB.Table("user_watch_history").Select("content_id").Where("user_id = ?", userId)
-	result := d.DB.Table("content").
+	subQuery := d.DB.WithContext(ctx).Table("user_watch_history").Select("content_id").Where("user_id = ?", userId)
+	result := d.DB.WithContext(ctx).Table("content").
 		Select("id, title, genre, popularity_score, created_at").
 		Where("id NOT IN (?) and available_countries @> ARRAY[?]::text[] and available_subscription @> ARRAY[?]::text[]", subQuery, country, subTier).
 		Order("popularity_score DESC").Limit(limit).Scan(&contents)
