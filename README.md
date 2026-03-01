@@ -327,8 +327,7 @@ $$\text{score} = 0.4 \times \text{popularity} + 0.35 \times \text{genre\_boost} 
 3. **Batch Endpoint Not Cached:** Unlike single-user recommendations, batch results are not cached. Repeated batch calls recompute everything.
 4. **Bounded Goroutines in Batch:** A `semaphore.Weighted(50)` limits concurrent goroutines to 50 in batch processing. Requests exceeding this limit will block until a slot is available.
 5. **Single-Instance Architecture:** No horizontal scaling, load balancing, or service discovery. Redis and PostgreSQL are single-node.
-6. **ML Simulation (Not Production ML):** The model client is an in-process simulation of an external ML inference service. The scoring algorithm, random noise, artificial latency (30–50ms), and failure rate (0.015%) are designed to mimic real ML service behavior but would be replaced by actual model serving infrastructure (e.g., TensorFlow Serving, TorchServe) in production.
-7. **No Authentication/Authorization:** All endpoints are publicly accessible without any auth mechanism.
+6. **No Authentication/Authorization:** All endpoints are publicly accessible without any auth mechanism.
 
 ### Scalability Considerations
 
@@ -343,7 +342,5 @@ $$\text{score} = 0.4 \times \text{popularity} + 0.35 \times \text{genre\_boost} 
 2. **~~Worker Pool for Batch:~~** ✅ Implemented — semaphore-based concurrency control (50 concurrent workers) prevents connection pool exhaustion.
 3. **Collaborative Filtering:** Extend the scoring model with user-to-user similarity (users who watched X also watched Y) for better personalization.
 4. **A/B Testing Framework:** Support multiple scoring algorithms simultaneously to measure recommendation quality.
-5. **Pagination for Recommendations:** Support cursor-based pagination for recommendation results instead of fixed limit.
-6. **Prometheus Metrics:** Export request latency histograms, cache hit rates, and DB query durations for production monitoring.
-7. **Graceful Shutdown:** Handle `SIGTERM` to drain in-flight requests before shutting down.
-8. **Context Propagation & Timeouts:** Add `context.Context` with timeouts to all database and cache operations to prevent hanging requests.
+5. **Graceful Shutdown:** Handle `SIGTERM` to drain in-flight requests before shutting down.
+6. **Context Propagation & Timeouts:** Add `context.Context` with timeouts to all database and cache operations to prevent hanging requests.
